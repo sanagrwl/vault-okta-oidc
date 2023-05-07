@@ -19,7 +19,7 @@ Single default role configured based on [github issue](https://github.com/hashic
   - psec okta group alias configured in `admin` namespace
 5. Maps vault admin group / alias to Okta group in `admin` namespace.
 
-#### Gotchas
+#### Gotchas / Findings
 1. When logging in with Okta, have to specify `admin` namespace always.
   - Can't do sub namespaces, `admin/psec` as Okta is configued in `admin` namespace.
 2. Token information only provides `default` policy information, though NS specific policy is applied.
