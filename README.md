@@ -1,6 +1,9 @@
 ## Vault Okta OIDC example
 
+#### Docs
 Based on: [Okta and Vault setup guide from Hashicorp](https://developer.hashicorp.com/vault/tutorials/cloud-ops/vault-oidc-okta)
+
+Single default role configured based on [github issue](https://github.com/hashicorp/vault/discussions/17763)
 
 
 #### Steps
