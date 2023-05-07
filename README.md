@@ -64,7 +64,7 @@ export VAULT_NAMESPACE="admin"
 
 - tf plan
 - tf apply
-- tf destroy #cleanup
+- tf destroy
 
 #### CLI Login
 
