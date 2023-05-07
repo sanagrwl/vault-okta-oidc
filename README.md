@@ -24,6 +24,24 @@ export VAULT_NAMESPACE="admin"
 
 - tf plan
 - tf apply
-- vault login -method=oidc -namespace=admin role="vault-role-okta-group-vault-team-psec"
-
 - tf destroy #cleanup
+
+#### CLI Login
+
+In new terminal
+
+```bash
+export VAULT_ADDR=""
+```
+
+CLI Login
+```bash
+vault login -method=oidc -path=okta -namespace=admin role="vault-role-okta-group-vault-team-psec"
+```
+
+UI login
+- Select OIDC
+- Namespace: admin
+- Role: vault-role-okta-group-vault-team-psec
+- More options: Mount path: Okta
+

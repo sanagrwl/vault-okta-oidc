@@ -1,7 +1,7 @@
 resource "vault_jwt_auth_backend" "okta" {
     # Enable OIDC auth for Okta integration
     description         = "Demo of the OIDC auth backend with Okta"
-    path                = "oidc"
+    path                = "okta"
     type                = "oidc"
     oidc_discovery_url  = "https://${var.okta_domain}"
     oidc_client_id      = var.okta_client_id
@@ -16,7 +16,7 @@ resource "vault_jwt_auth_backend_role" "vault-role-okta-default" {
     user_claim            = "sub"
     role_type             = "oidc"
     bound_audiences       = [ var.okta_client_id ]
-    allowed_redirect_uris = ["${var.vault_addr}/ui/vault/auth/oidc/oidc/callback", "http://localhost:8250/oidc/callback" ]
+    allowed_redirect_uris = ["${var.vault_addr}/ui/vault/auth/${vault_jwt_auth_backend.okta.path}/oidc/callback", "http://localhost:8250/oidc/callback" ]
     token_policies  = ["default"]
 }
 
@@ -29,7 +29,7 @@ resource "vault_jwt_auth_backend_role" "vault-role-okta-group-vault-team-psec" {
     user_claim            = "sub"
     role_type             = "oidc"
     bound_audiences       = [ var.okta_client_id ]
-    allowed_redirect_uris = ["${var.vault_addr}/ui/vault/auth/oidc/oidc/callback", "http://localhost:8250/oidc/callback" ]
+    allowed_redirect_uris = ["${var.vault_addr}/ui/vault/auth/${vault_jwt_auth_backend.okta.path}/oidc/callback", "http://localhost:8250/oidc/callback" ]
     token_policies  = ["default"]
     oidc_scopes = [ "groups" ]
     groups_claim = "groups"
