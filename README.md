@@ -25,6 +25,10 @@ Single default role configured based on [github issue](https://github.com/hashic
   - Can't do sub namespaces, `admin/psec` as Okta is configued in `admin` namespace.
 2. Token information only provides `default` policy information, though NS specific policy is applied.
   - This is due to how group membership works for internal to external.
+3. Using a single Okta default role, as policies are applied at group level. Not sure if role per okta group buys much (audit?)
+4. What value does mapping internal okta group to external okta group in parent namespace provides....? 
+- Policies doesn't have to specify full namespace paths. Eg: `admin/psec/secret/..`... instead it can be just `secret/..`
+- Policies belong in namespaces, and parent namespaces are not cluttered.
 
 ```bash
 Key                  Value
