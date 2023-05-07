@@ -25,7 +25,7 @@ resource "vault_jwt_auth_backend_role" "vault-role-okta-default" {
 resource "vault_jwt_auth_backend_role" "vault-role-okta-group-vault-team-psec" {
     # role for okta group: okta-group-vault-team-psec
     backend         = vault_jwt_auth_backend.okta.path
-    role_name       = "vault-role-okta-group-vault-team-psec"
+    role_name       = "psec-team"
     user_claim            = "sub"
     role_type             = "oidc"
     bound_audiences       = [ var.okta_client_id ]
@@ -46,8 +46,8 @@ path "/secret/psec/*" {
 EOT
 }
 
-resource "vault_identity_group" "okta-group-vault-team-psec" {
-  name     = "okta-group-vault-team-psec"
+resource "vault_identity_group" "psec-team" {
+  name     = "psec-team"
   type     = "external"
   policies = [ vault_policy.vault-policy-team-psec.name ]
 
@@ -59,7 +59,51 @@ resource "vault_identity_group" "okta-group-vault-team-psec" {
 resource "vault_identity_group_alias" "okta-group-vault-team-psec" {
   name           = "okta-group-vault-team-psec" # this must match okta group
   mount_accessor = vault_jwt_auth_backend.okta.accessor
-  canonical_id   = vault_identity_group.okta-group-vault-team-psec.id
+  canonical_id   = vault_identity_group.psec-team.id
 }
 
-# ### End: psec team setup
+#### End: psec team setup
+
+
+#### Start: admin setup
+
+resource "vault_jwt_auth_backend_role" "vault-role-okta-group-vault-admins" {
+    # role for okta group: okta-group-vault-team-psec
+    backend         = vault_jwt_auth_backend.okta.path
+    role_name       = "vault-admin"
+    user_claim            = "sub"
+    role_type             = "oidc"
+    bound_audiences       = [ var.okta_client_id ]
+    allowed_redirect_uris = ["${var.vault_addr}/ui/vault/auth/${vault_jwt_auth_backend.okta.path}/oidc/callback", "http://localhost:8250/oidc/callback" ]
+    token_policies  = ["default"]
+    oidc_scopes = [ "groups" ]
+    groups_claim = "groups"
+}
+
+
+resource "vault_policy" "vault-policy-admin" {
+  name = "vault-policy-admin"
+
+  policy = <<EOT
+path "*" {
+    capabilities = ["sudo","read","create","update","delete","list","patch"]
+}
+EOT
+}
+
+resource "vault_identity_group" "vault-admin" {
+  name     = "vault-admin"
+  type     = "external"
+  policies = [ vault_policy.vault-policy-admin.name ]
+
+  metadata = {
+    responsibility="okta-group-vault-admin"
+  }
+}
+
+resource "vault_identity_group_alias" "okta-group-vault-admins" {
+  name           = "okta-group-vault-admins" # this must match okta group
+  mount_accessor = vault_jwt_auth_backend.okta.accessor
+  canonical_id   = vault_identity_group.vault-admin.id
+}
+#### End: admin setup
