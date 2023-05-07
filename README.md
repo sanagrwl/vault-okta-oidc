@@ -11,7 +11,8 @@ Single default role configured based on [github issue](https://github.com/hashic
 
 1. Configures Okta using OIDC at path `okta` in `admin` namespace
 2. Creates `psec` namespace, child of `admin`
-  - `admin` is the namespace in HCP Vault that everything should be configured under.
+  - `admin` is the default namespace in HCP Vault that everything should be configured under.
+  - All namespaces must be created under `admin` NS. No access to `root` namespace
 3. Creates policy for psec in `psec` namespace
   - A team policy exist in team's namespace
 4. Configures internal group in namepspsace `psec`
