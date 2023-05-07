@@ -1,0 +1,7 @@
+.env
+
+# terraform
+.terraform/
+*.tfstate*
+*.hcl
+*.sh
