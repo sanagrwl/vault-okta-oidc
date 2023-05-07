@@ -36,12 +36,11 @@ export VAULT_ADDR=""
 
 CLI Login
 ```bash
-vault login -method=oidc -path=okta -namespace=admin role="vault-role-okta-group-vault-team-psec"
+vault login -method=oidc -path=okta -namespace=admin
 ```
 
 UI login
 - Select OIDC
 - Namespace: admin
-- Role: vault-role-okta-group-vault-team-psec
 - More options: Mount path: Okta
 

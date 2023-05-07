@@ -18,23 +18,13 @@ resource "vault_jwt_auth_backend_role" "vault-role-okta-default" {
     bound_audiences       = [ var.okta_client_id ]
     allowed_redirect_uris = ["${var.vault_addr}/ui/vault/auth/${vault_jwt_auth_backend.okta.path}/oidc/callback", "http://localhost:8250/oidc/callback" ]
     token_policies  = ["default"]
+    oidc_scopes = [ "groups" ]
+    groups_claim = "groups"
+
 }
 
 
 ### Start: psec team setup
-resource "vault_jwt_auth_backend_role" "vault-role-okta-group-vault-team-psec" {
-    # role for okta group: okta-group-vault-team-psec
-    backend         = vault_jwt_auth_backend.okta.path
-    role_name       = "psec-team"
-    user_claim            = "sub"
-    role_type             = "oidc"
-    bound_audiences       = [ var.okta_client_id ]
-    allowed_redirect_uris = ["${var.vault_addr}/ui/vault/auth/${vault_jwt_auth_backend.okta.path}/oidc/callback", "http://localhost:8250/oidc/callback" ]
-    token_policies  = ["default"]
-    oidc_scopes = [ "groups" ]
-    groups_claim = "groups"
-}
-
 resource "vault_policy" "vault-policy-team-psec" {
   name = "vault-policy-team-psec"
 
@@ -66,20 +56,6 @@ resource "vault_identity_group_alias" "okta-group-vault-team-psec" {
 
 
 #### Start: admin setup
-
-resource "vault_jwt_auth_backend_role" "vault-role-okta-group-vault-admins" {
-    # role for okta group: okta-group-vault-team-psec
-    backend         = vault_jwt_auth_backend.okta.path
-    role_name       = "vault-admin"
-    user_claim            = "sub"
-    role_type             = "oidc"
-    bound_audiences       = [ var.okta_client_id ]
-    allowed_redirect_uris = ["${var.vault_addr}/ui/vault/auth/${vault_jwt_auth_backend.okta.path}/oidc/callback", "http://localhost:8250/oidc/callback" ]
-    token_policies  = ["default"]
-    oidc_scopes = [ "groups" ]
-    groups_claim = "groups"
-}
-
 
 resource "vault_policy" "vault-policy-admin" {
   name = "vault-policy-admin"
