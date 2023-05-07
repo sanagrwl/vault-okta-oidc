@@ -9,39 +9,43 @@ Single default role configured based on [github issue](https://github.com/hashic
 
 #### Setup
 
-1. Configures Okta using OIDC at path `okta` in `admin` namespace
-2. Creates `psec` namespace, child of `admin`
+- Configures Okta using OIDC at path `okta` in `admin` namespace
+- Creates `psec` namespace, child of `admin`
   - `admin` is the default namespace in HCP Vault that everything should be configured under.
   - All namespaces must be created under `admin` NS. No access to `root` namespace
-3. Creates policy for psec in `psec` namespace
+- Creates policy for psec in `psec` namespace
   - A team policy exist in team's namespace
-4. Configures internal group in namepspsace `psec`
+- Configures internal group in namepspsace `psec`
   - Maps to external group for psec in  `admin` namespace
   - psec okta group alias configured in `admin` namespace
-5. Maps vault admin group / alias to Okta group in `admin` namespace.
+- Maps vault admin group / alias to Okta group in `admin` namespace.
 
 #### Gotchas / Findings
-1. When logging in with Okta, have to specify `admin` namespace always.
+- When logging in with Okta, have to specify `admin` namespace always.
   - Can't do sub namespaces, `admin/psec` as Okta is configued in `admin` namespace.
-2. Token information only provides `default` policy information, though NS specific policy is applied.
+  - Eg: `vault login -method=oidc -path=okta -namespace=admin`
+- Using a single Okta default role, as policies are applied at group level.
+  - Not sure if role per okta group buys much (audit?)
+  - See: [github issue](https://github.com/hashicorp/vault/discussions/17763)
+- What value does mapping internal okta group to external okta group in parent namespace provides? 
+  - Clean policies. Policies doesn't have to specify full namespace paths. Eg: `admin/psec/secret/..` instead it can be just `secret/..`
+  - Policies belong in team's namespaces. Parent namespaces are not cluttered.
+  - Any other?
+- Token information only provides `default` policy information, though NS specific policy is applied.
   - This is due to how group membership works for internal to external.
-3. Using a single Okta default role, as policies are applied at group level. Not sure if role per okta group buys much (audit?)
-4. What value does mapping internal okta group to external okta group in parent namespace provides....? 
-- Policies doesn't have to specify full namespace paths. Eg: `admin/psec/secret/..`... instead it can be just `secret/..`
-- Policies belong in namespaces, and parent namespaces are not cluttered.
-
-```bash
-Key                  Value
----                  -----
-token                ...
-token_accessor       ...
-token_duration       1h
-token_renewable      true
-token_policies       ["default"]
-identity_policies    []
-policies             ["default"]
-token_meta_role      vault-role-okta-default
-```
+  - You won't see other policy applied via internal group here.
+    ```bash
+    Key                  Value
+    ---                  -----
+    token                ...
+    token_accessor       ...
+    token_duration       1h
+    token_renewable      true
+    token_policies       ["default"]
+    identity_policies    []
+    policies             ["default"]
+    token_meta_role      vault-role-okta-default
+    ```
 
 
 #### Steps
