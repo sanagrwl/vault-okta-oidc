@@ -5,6 +5,39 @@ Based on: [Okta and Vault setup guide from Hashicorp](https://developer.hashicor
 
 Single default role configured based on [github issue](https://github.com/hashicorp/vault/discussions/17763)
 
+[Leveraging identity for auth methods with external groups](https://developer.hashicorp.com/vault/tutorials/enterprise/namespaces#leveraging-identity-for-auth-methods-with-external-groups)
+
+#### Setup
+
+1. Configures Okta using OIDC at path `okta` in `admin` namespace
+2. Creates `psec` namespace, child of `admin`
+  - `admin` is the namespace in HCP Vault that everything should be configured under.
+3. Creates policy for psec in `psec` namespace
+  - A team policy exist in team's namespace
+4. Configures internal group in namepspsace `psec`
+  - Maps to external group for psec in  `admin` namespace
+  - psec okta group alias configured in `admin` namespace
+5. Maps vault admin group / alias to Okta group in `admin` namespace.
+
+#### Gotchas
+1. When logging in with Okta, have to specify `admin` namespace always.
+  - Can't do sub namespaces, `admin/psec` as Okta is configued in `admin` namespace.
+2. Token information only provides `default` policy information, though NS specific policy is applied.
+  - This is due to how group membership works for internal to external.
+
+```bash
+Key                  Value
+---                  -----
+token                ...
+token_accessor       ...
+token_duration       1h
+token_renewable      true
+token_policies       ["default"]
+identity_policies    []
+policies             ["default"]
+token_meta_role      vault-role-okta-default
+```
+
 
 #### Steps
 

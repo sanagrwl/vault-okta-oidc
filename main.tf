@@ -25,13 +25,45 @@ resource "vault_jwt_auth_backend_role" "vault-role-okta-default" {
 
 
 ### Start: psec team setup
+resource "vault_namespace" "psec" {
+    path = "psec"
+}
+
+resource "vault_mount" "psec_kv_engine" {
+  namespace = vault_namespace.psec.path_fq
+  path      = "secret"
+  type      = "kv"
+  options = {
+    version = "2"
+  }
+}
+
 resource "vault_policy" "vault-policy-team-psec" {
   name = "vault-policy-team-psec"
+  namespace = vault_namespace.psec.path_fq
 
   policy = <<EOT
-# Read permission on the k/v secrets
-path "/secret/psec/*" {
+# permission to manage secrets in namespace
+path "${vault_mount.psec_kv_engine.path}/*" {
     capabilities = ["read","create","update","delete","list"]
+}
+
+# for UI, with KV2, need additional token capabilities.
+# https://discuss.hashicorp.com/t/getting-permission-denied-when-using-a-token-generated-in-hashicorp-vault/36645/3
+
+# Allow tokens to look up their own properties
+path "auth/token/lookup-self" {
+  capabilities = ["read"]
+}
+
+# Allow tokens to revoke themselves
+path "auth/token/revoke-self" {
+  capabilities = ["update"]
+}
+
+# Allow a token to look up its own capabilities on a path
+path "sys/capabilities-self" {
+  capabilities = ["update"]
 }
 EOT
 }
@@ -39,7 +71,6 @@ EOT
 resource "vault_identity_group" "psec-team" {
   name     = "psec-team"
   type     = "external"
-  policies = [ vault_policy.vault-policy-team-psec.name ]
 
   metadata = {
     responsibility="okta-group-vault-team-psec"
@@ -51,6 +82,15 @@ resource "vault_identity_group_alias" "okta-group-vault-team-psec" {
   mount_accessor = vault_jwt_auth_backend.okta.accessor
   canonical_id   = vault_identity_group.psec-team.id
 }
+
+resource "vault_identity_group" "psec-team-ns-group" {
+  name     = "psec-team-ns-group"
+  type = "internal"
+  namespace = vault_namespace.psec.path_fq
+  member_group_ids = [ vault_identity_group.psec-team.id ]
+  policies = [ vault_policy.vault-policy-team-psec.name ]
+}
+
 
 #### End: psec team setup
 
