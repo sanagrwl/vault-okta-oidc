@@ -5,3 +5,6 @@
 *.tfstate*
 *.hcl
 *.sh
+
+# vault
+sentinel/
