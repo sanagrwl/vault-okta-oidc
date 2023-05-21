@@ -1,16 +1,16 @@
 variable "okta_domain" {
-    type = string
+  type = string
 }
 
 variable "okta_client_id" {
-    type = string
+  type = string
 }
 
 variable "okta_client_secret" {
-    type = string
+  type = string
 }
 
 variable "vault_addr" {
-    type = string
+  type = string
 }
 

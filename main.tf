@@ -1,32 +1,32 @@
 resource "vault_jwt_auth_backend" "okta" {
-    # Enable OIDC auth for Okta integration
-    description         = "Demo of the OIDC auth backend with Okta"
-    path                = "okta"
-    type                = "oidc"
-    oidc_discovery_url  = "https://${var.okta_domain}"
-    oidc_client_id      = var.okta_client_id
-    oidc_client_secret  = var.okta_client_secret
-    default_role        = "vault-role-okta-default"
+  # Enable OIDC auth for Okta integration
+  description        = "Demo of the OIDC auth backend with Okta"
+  path               = "okta"
+  type               = "oidc"
+  oidc_discovery_url = "https://${var.okta_domain}"
+  oidc_client_id     = var.okta_client_id
+  oidc_client_secret = var.okta_client_secret
+  default_role       = "vault-role-okta-default"
 }
 
 resource "vault_jwt_auth_backend_role" "vault-role-okta-default" {
-    # default role for okta
-    backend         = vault_jwt_auth_backend.okta.path
-    role_name       = "vault-role-okta-default"
-    user_claim            = "sub"
-    role_type             = "oidc"
-    bound_audiences       = [ var.okta_client_id ]
-    allowed_redirect_uris = ["${var.vault_addr}/ui/vault/auth/${vault_jwt_auth_backend.okta.path}/oidc/callback", "http://localhost:8250/oidc/callback" ]
-    token_policies  = ["default"]
-    oidc_scopes = [ "groups" ]
-    groups_claim = "groups"
+  # default role for okta
+  backend               = vault_jwt_auth_backend.okta.path
+  role_name             = "vault-role-okta-default"
+  user_claim            = "sub"
+  role_type             = "oidc"
+  bound_audiences       = [var.okta_client_id]
+  allowed_redirect_uris = ["${var.vault_addr}/ui/vault/auth/${vault_jwt_auth_backend.okta.path}/oidc/callback", "http://localhost:8250/oidc/callback"]
+  token_policies        = ["default"]
+  oidc_scopes           = ["groups"]
+  groups_claim          = "groups"
 
 }
 
 
 ### Start: psec team setup
 resource "vault_namespace" "psec" {
-    path = "psec"
+  path = "psec"
 }
 
 resource "vault_mount" "psec_kv_engine" {
@@ -39,16 +39,16 @@ resource "vault_mount" "psec_kv_engine" {
 }
 
 resource "vault_jwt_auth_backend" "github" {
-    description         = "Demonstration of the Terraform JWT auth backend"
-    path                = "github"
-    oidc_discovery_url  = "https://token.actions.githubusercontent.com"
-    bound_issuer        = "https://token.actions.githubusercontent.com"
-    namespace           = vault_namespace.psec.path_fq
-    type                = "jwt"    
+  description        = "Demonstration of the Terraform JWT auth backend"
+  path               = "github"
+  oidc_discovery_url = "https://token.actions.githubusercontent.com"
+  bound_issuer       = "https://token.actions.githubusercontent.com"
+  namespace          = vault_namespace.psec.path_fq
+  type               = "jwt"
 }
 
 resource "vault_policy" "vault-policy-team-psec" {
-  name = "vault-policy-team-psec"
+  name      = "vault-policy-team-psec"
   namespace = vault_namespace.psec.path_fq
 
   policy = <<EOT
@@ -85,10 +85,10 @@ EOT
 }
 
 resource "vault_policy" "github" {
-    name = "github"
-    namespace = vault_namespace.psec.path_fq
+  name      = "github"
+  namespace = vault_namespace.psec.path_fq
 
-    policy = <<EOT
+  policy = <<EOT
 # permission to read secrets
 path "${vault_mount.psec_kv_engine.path}/*" {
   capabilities = ["read"]
@@ -98,7 +98,7 @@ EOT
 }
 
 resource "vault_policy" "manage-github-role" {
-  name = "vault-policy-team-psec-github-role"
+  name      = "vault-policy-team-psec-github-role"
   namespace = vault_namespace.psec.path_fq
 
   policy = <<EOT
@@ -114,25 +114,25 @@ EOT
 }
 
 resource "vault_jwt_auth_backend_role" "github" {
-  namespace = vault_namespace.psec.path_fq
-  backend         = vault_jwt_auth_backend.github.path
-  role_name       = "github"
-  token_policies  = [vault_policy.github.name]
+  namespace      = vault_namespace.psec.path_fq
+  backend        = vault_jwt_auth_backend.github.path
+  role_name      = "github"
+  token_policies = [vault_policy.github.name]
   bound_claims = {
     repository = "sanagrwl/vault-okta-oidc"
   }
-  user_claim      = "actor"
-  role_type       = "jwt"
-  token_ttl = "600"
+  user_claim = "actor"
+  role_type  = "jwt"
+  token_ttl  = "600"
 }
 
 
 resource "vault_identity_group" "psec-team" {
-  name     = "psec-team"
-  type     = "external"
+  name = "psec-team"
+  type = "external"
 
   metadata = {
-    responsibility="okta-group-vault-team-psec"
+    responsibility = "okta-group-vault-team-psec"
   }
 }
 
@@ -143,11 +143,11 @@ resource "vault_identity_group_alias" "okta-group-vault-team-psec" {
 }
 
 resource "vault_identity_group" "psec-team-ns-group" {
-  name     = "psec-team-ns-group"
-  type = "internal"
-  namespace = vault_namespace.psec.path_fq
-  member_group_ids = [ vault_identity_group.psec-team.id ]
-  policies = [ vault_policy.vault-policy-team-psec.name, vault_policy.manage-github-role.name ]
+  name             = "psec-team-ns-group"
+  type             = "internal"
+  namespace        = vault_namespace.psec.path_fq
+  member_group_ids = [vault_identity_group.psec-team.id]
+  policies         = [vault_policy.vault-policy-team-psec.name, vault_policy.manage-github-role.name]
 }
 
 # resource "vault_egp_policy" "valid-github-role" {
